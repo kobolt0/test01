@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import re
+import xml.etree.ElementTree as ET
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import urllib3
@@ -10,7 +11,7 @@ urllib3.disable_warnings()
 # 페이지 설정
 st.set_page_config(page_title="서울 전자도서관 검색", page_icon="📚", layout="wide")
 st.title("📚 서울 구립 전자도서관 ebook 검색")
-st.caption("서울 20개 도서관 자동 검색 + 7개 도서관 링크 제공")
+st.caption("서울 21개 도서관 자동 검색 + 6개 도서관 링크 제공")
 
 # 검색 입력
 keyword = st.text_input("책 제목을 입력하세요", placeholder="예: 프로젝트 헤일메리")
@@ -144,6 +145,35 @@ def search_yes24_style(name, base_url, keyword, encoding="utf-8"):
     return results
 
 
+def search_sen_library(keyword):
+    """서울시교육청 전자도서관 (e-lib.sen.go.kr) XML API"""
+    resp = requests.get(
+        "https://e-lib.sen.go.kr/api/contents/search",
+        headers=HEADERS,
+        params={"keyword": keyword},
+        timeout=10
+    )
+    resp.raise_for_status()
+    root = ET.fromstring(resp.content)
+
+    results = []
+    # searchTY01: 소장형 전자책 (TY03은 오디오북이라 제외)
+    for item in root.findall(".//searchTY01/ContentDataList"):
+        title = item.findtext("title", "").strip()
+        author = item.findtext("author", "").strip()
+        total = int(item.findtext("copys", "0") or "0")
+        loaned = int(item.findtext("loanCount", "0") or "0")
+        reserve = int(item.findtext("resvCount", "0") or "0")
+        results.append({
+            "title": title,
+            "author": author,
+            "available": total - loaned,
+            "total": total,
+            "reserve": reserve,
+        })
+    return results
+
+
 def search_gangnam(keyword):
     """강남구 (EUC-KR, /elibbook/book_info.asp)"""
     encoded = quote(keyword.encode("euc-kr"))
@@ -219,6 +249,8 @@ LIBRARIES = [
     {"name": "성동구",   "search_url": lambda kw: yes24_search_url_euckr("http://ebook.sdlib.or.kr:8092", kw), "func": lambda kw: search_yes24_style("성동구", "http://ebook.sdlib.or.kr:8092", kw, "euc-kr")},
     # 강남구 특수
     {"name": "강남구",   "search_url": lambda kw: gangnam_search_url(kw), "func": lambda kw: search_gangnam(kw)},
+    # 서울시교육청 전자도서관 (XML API)
+    {"name": "서울시교육청", "search_url": lambda kw: f"https://e-lib.sen.go.kr/contents/search?searchWord={quote(kw)}", "func": lambda kw: search_sen_library(kw)},
 ]
 
 # 자동 검색 불가 도서관 (플랫폼 미지원 또는 로그인 필요) - 링크만 제공
@@ -229,7 +261,6 @@ LINK_ONLY_LIBRARIES = [
     {"name": "은평구",       "search_url": lambda kw: "https://epbook.eplib.or.kr/ebookPlatform/home/main.do",                    "note": "리브로피아/YES24"},
     {"name": "광진구",       "search_url": lambda kw: "http://gwangjin.dasangng.co.kr/FxLibrary/",                                "note": "북큐브 FxLibrary"},
     {"name": "금천구",       "search_url": lambda kw: "https://elib.geumcheonlib.seoul.kr/FxLibrary/",                            "note": "북큐브 FxLibrary"},
-    {"name": "서울시교육청", "search_url": lambda kw: f"https://e-lib.sen.go.kr/contents/search?searchWord={quote(kw)}",          "note": "서울 거주/직장/학교"},
     {"name": "국회도서관",   "search_url": lambda kw: "https://ebook.nanet.go.kr/main",                                           "note": "전국민 무료 (최초 1회 방문)"},
 ]
 
