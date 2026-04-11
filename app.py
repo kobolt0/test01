@@ -10,7 +10,7 @@ urllib3.disable_warnings()
 # 페이지 설정
 st.set_page_config(page_title="서울 전자도서관 검색", page_icon="📚", layout="wide")
 st.title("📚 서울 구립 전자도서관 ebook 검색")
-st.caption("서울 19개 도서관 동시 검색")
+st.caption("서울 20개 도서관 자동 검색 + 7개 도서관 링크 제공")
 
 # 검색 입력
 keyword = st.text_input("책 제목을 입력하세요", placeholder="예: 프로젝트 헤일메리")
@@ -196,7 +196,7 @@ LIBRARIES = [
     {"name": "서울시립",
      "search_url": lambda kw: f"https://elib.seoul.go.kr/contents/search/content?t=EB&k={quote(kw)}",
      "func": lambda kw: search_seoul_metropolitan(kw)},
-    # elibrary-front (교보 기반) 10개 구
+    # elibrary-front (교보 기반) 11개 구
     {"name": "강북구",   "search_url": lambda kw: elibrary_search_url("http://ebook.gblib.or.kr", kw),      "func": lambda kw: search_elibrary_front("강북구", "http://ebook.gblib.or.kr", kw)},
     {"name": "구로구",   "search_url": lambda kw: elibrary_search_url("https://ebook.guro.go.kr", kw),      "func": lambda kw: search_elibrary_front("구로구", "https://ebook.guro.go.kr", kw)},
     {"name": "노원구",   "search_url": lambda kw: elibrary_search_url("https://eb.nowonlib.kr", kw),        "func": lambda kw: search_elibrary_front("노원구", "https://eb.nowonlib.kr", kw)},
@@ -204,6 +204,7 @@ LIBRARIES = [
     {"name": "동작구",   "search_url": lambda kw: elibrary_search_url("https://ebook.dongjak.go.kr", kw),   "func": lambda kw: search_elibrary_front("동작구", "https://ebook.dongjak.go.kr", kw)},
     {"name": "서대문구", "search_url": lambda kw: elibrary_search_url("http://ebook.sdm.or.kr", kw),        "func": lambda kw: search_elibrary_front("서대문구", "http://ebook.sdm.or.kr", kw)},
     {"name": "서초구",   "search_url": lambda kw: elibrary_search_url("https://ebook.seocholib.or.kr", kw), "func": lambda kw: search_elibrary_front("서초구", "https://ebook.seocholib.or.kr", kw)},
+    {"name": "성북구",   "search_url": lambda kw: elibrary_search_url("https://elibrary.sblib.seoul.kr", kw), "func": lambda kw: search_elibrary_front("성북구", "https://elibrary.sblib.seoul.kr", kw)},
     {"name": "양천구",   "search_url": lambda kw: elibrary_search_url("http://ebook.yangcheon.or.kr", kw),  "func": lambda kw: search_elibrary_front("양천구", "http://ebook.yangcheon.or.kr", kw)},
     {"name": "용산구",   "search_url": lambda kw: elibrary_search_url("http://ebook.yslibrary.or.kr", kw),  "func": lambda kw: search_elibrary_front("용산구", "http://ebook.yslibrary.or.kr", kw)},
     {"name": "중구",     "search_url": lambda kw: elibrary_search_url("https://ebook.junggulib.or.kr", kw), "func": lambda kw: search_elibrary_front("중구", "https://ebook.junggulib.or.kr", kw)},
@@ -220,6 +221,18 @@ LIBRARIES = [
     {"name": "강남구",   "search_url": lambda kw: gangnam_search_url(kw), "func": lambda kw: search_gangnam(kw)},
 ]
 
+# 자동 검색 불가 도서관 (플랫폼 미지원 또는 로그인 필요) - 링크만 제공
+LINK_ONLY_LIBRARIES = [
+    # 성북구와 같은 elibrary-front 기반이나 SSO/방화벽으로 직접 접근 불가
+    {"name": "도봉구",       "search_url": lambda kw: "https://elib.dobong.kr/Kyobo_T3/Default.asp",                              "note": "교보 T3 플랫폼"},
+    {"name": "마포구",       "search_url": lambda kw: "https://mplib.mapo.go.kr/mcl/MENU1062/CONT4005/contents.do",               "note": "SSO 기반"},
+    {"name": "은평구",       "search_url": lambda kw: "https://epbook.eplib.or.kr/ebookPlatform/home/main.do",                    "note": "리브로피아/YES24"},
+    {"name": "광진구",       "search_url": lambda kw: "http://gwangjin.dasangng.co.kr/FxLibrary/",                                "note": "북큐브 FxLibrary"},
+    {"name": "금천구",       "search_url": lambda kw: "https://elib.geumcheonlib.seoul.kr/FxLibrary/",                            "note": "북큐브 FxLibrary"},
+    {"name": "서울시교육청", "search_url": lambda kw: f"https://e-lib.sen.go.kr/contents/search?searchWord={quote(kw)}",          "note": "서울 거주/직장/학교"},
+    {"name": "국회도서관",   "search_url": lambda kw: "https://ebook.nanet.go.kr/main",                                           "note": "전국민 무료 (최초 1회 방문)"},
+]
+
 
 def search_library(lib, keyword):
     """단일 도서관 검색 (예외 처리 포함)"""
@@ -233,7 +246,7 @@ def search_library(lib, keyword):
 # ── UI ──────────────────────────────────────────────────────────────────────────
 
 if search_btn and keyword:
-    st.markdown(f"**'{keyword}'** 검색 중... (19개 도서관 동시 검색)")
+    st.markdown(f"**'{keyword}'** 검색 중... ({len(LIBRARIES)}개 도서관 동시 검색)")
     progress = st.progress(0)
     results_container = st.container()
 
@@ -309,6 +322,17 @@ if search_btn and keyword:
             with st.expander("⚠️ 접속 오류"):
                 for name, err in errors.items():
                     st.text(f"{name}: {err}")
+
+        # 자동 검색 불가 도서관 - 링크만 제공
+        st.markdown("---")
+        st.markdown("**직접 검색 필요한 도서관** (자동 조회 불가)")
+        cols = st.columns(4)
+        for i, lib in enumerate(LINK_ONLY_LIBRARIES):
+            url = lib["search_url"](keyword)
+            note = lib.get("note", "")
+            with cols[i % 4]:
+                st.markdown(f"[🔗 {lib['name']}]({url})")
+                st.caption(note)
 
 elif search_btn and not keyword:
     st.warning("책 제목을 입력해주세요.")
