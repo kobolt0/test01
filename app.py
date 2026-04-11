@@ -35,14 +35,14 @@ def search_seoul_metropolitan(keyword):
     books = resp.json().get("ContentDataList", [])
     results = []
     for b in books:
-        available = b.get("currentLoanCount", 0)
         total = b.get("b2bCopys", 0)
+        loaned = b.get("currentLoanCount", 0)
         reserve = b.get("reserveCnt", 0)
         results.append({
             "title": b.get("title", ""),
             "author": b.get("author", ""),
             "publisher": b.get("publisher", ""),
-            "available": available,
+            "available": total - loaned,
             "total": total,
             "reserve": reserve,
             "cover": b.get("coverMSizeUrl") or b.get("coverUrl"),
