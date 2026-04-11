@@ -181,29 +181,29 @@ def search_gangnam(keyword):
 # ── 도서관 목록 ──────────────────────────────────────────────────────────────────
 
 LIBRARIES = [
-    {"name": "서울시립", "func": lambda kw: search_seoul_metropolitan(kw)},
+    {"name": "서울시립", "url": "https://elib.seoul.go.kr", "func": lambda kw: search_seoul_metropolitan(kw)},
     # elibrary-front (교보 기반) 10개 구
-    {"name": "강북구", "func": lambda kw: search_elibrary_front("강북구", "http://ebook.gblib.or.kr", kw)},
-    {"name": "구로구", "func": lambda kw: search_elibrary_front("구로구", "https://ebook.guro.go.kr", kw)},
-    {"name": "노원구", "func": lambda kw: search_elibrary_front("노원구", "https://eb.nowonlib.kr", kw)},
-    {"name": "동대문구", "func": lambda kw: search_elibrary_front("동대문구", "http://e-book.l4d.or.kr", kw)},
-    {"name": "동작구", "func": lambda kw: search_elibrary_front("동작구", "https://ebook.dongjak.go.kr", kw)},
-    {"name": "서대문구", "func": lambda kw: search_elibrary_front("서대문구", "http://ebook.sdm.or.kr", kw)},
-    {"name": "서초구", "func": lambda kw: search_elibrary_front("서초구", "https://ebook.seocholib.or.kr", kw)},
-    {"name": "양천구", "func": lambda kw: search_elibrary_front("양천구", "http://ebook.yangcheon.or.kr", kw)},
-    {"name": "용산구", "func": lambda kw: search_elibrary_front("용산구", "http://ebook.yslibrary.or.kr", kw)},
-    {"name": "중구", "func": lambda kw: search_elibrary_front("중구", "https://ebook.junggulib.or.kr", kw)},
+    {"name": "강북구", "url": "http://ebook.gblib.or.kr", "func": lambda kw: search_elibrary_front("강북구", "http://ebook.gblib.or.kr", kw)},
+    {"name": "구로구", "url": "https://ebook.guro.go.kr", "func": lambda kw: search_elibrary_front("구로구", "https://ebook.guro.go.kr", kw)},
+    {"name": "노원구", "url": "https://eb.nowonlib.kr", "func": lambda kw: search_elibrary_front("노원구", "https://eb.nowonlib.kr", kw)},
+    {"name": "동대문구", "url": "http://e-book.l4d.or.kr", "func": lambda kw: search_elibrary_front("동대문구", "http://e-book.l4d.or.kr", kw)},
+    {"name": "동작구", "url": "https://ebook.dongjak.go.kr", "func": lambda kw: search_elibrary_front("동작구", "https://ebook.dongjak.go.kr", kw)},
+    {"name": "서대문구", "url": "http://ebook.sdm.or.kr", "func": lambda kw: search_elibrary_front("서대문구", "http://ebook.sdm.or.kr", kw)},
+    {"name": "서초구", "url": "https://ebook.seocholib.or.kr", "func": lambda kw: search_elibrary_front("서초구", "https://ebook.seocholib.or.kr", kw)},
+    {"name": "양천구", "url": "http://ebook.yangcheon.or.kr", "func": lambda kw: search_elibrary_front("양천구", "http://ebook.yangcheon.or.kr", kw)},
+    {"name": "용산구", "url": "http://ebook.yslibrary.or.kr", "func": lambda kw: search_elibrary_front("용산구", "http://ebook.yslibrary.or.kr", kw)},
+    {"name": "중구", "url": "https://ebook.junggulib.or.kr", "func": lambda kw: search_elibrary_front("중구", "https://ebook.junggulib.or.kr", kw)},
     # /search 패턴 (UTF-8)
-    {"name": "강동구", "func": lambda kw: search_yes24_style("강동구", "https://ebook.gdlibrary.or.kr", kw)},
-    {"name": "강서구", "func": lambda kw: search_yes24_style("강서구", "https://ebook.gangseo.seoul.kr", kw)},
-    {"name": "관악구", "func": lambda kw: search_yes24_style("관악구", "https://e-lib.gwanak.go.kr", kw)},
-    {"name": "송파구", "func": lambda kw: search_yes24_style("송파구", "https://ebook.splib.or.kr", kw)},
-    {"name": "종로구", "func": lambda kw: search_yes24_style("종로구", "https://elib.jongno.go.kr", kw)},
-    {"name": "영등포구", "func": lambda kw: search_yes24_style("영등포구", "https://ebook.ydplib.or.kr", kw)},
+    {"name": "강동구", "url": "https://ebook.gdlibrary.or.kr", "func": lambda kw: search_yes24_style("강동구", "https://ebook.gdlibrary.or.kr", kw)},
+    {"name": "강서구", "url": "https://ebook.gangseo.seoul.kr", "func": lambda kw: search_yes24_style("강서구", "https://ebook.gangseo.seoul.kr", kw)},
+    {"name": "관악구", "url": "https://e-lib.gwanak.go.kr", "func": lambda kw: search_yes24_style("관악구", "https://e-lib.gwanak.go.kr", kw)},
+    {"name": "송파구", "url": "https://ebook.splib.or.kr", "func": lambda kw: search_yes24_style("송파구", "https://ebook.splib.or.kr", kw)},
+    {"name": "종로구", "url": "https://elib.jongno.go.kr", "func": lambda kw: search_yes24_style("종로구", "https://elib.jongno.go.kr", kw)},
+    {"name": "영등포구", "url": "https://ebook.ydplib.or.kr", "func": lambda kw: search_yes24_style("영등포구", "https://ebook.ydplib.or.kr", kw)},
     # /search 패턴 (EUC-KR)
-    {"name": "성동구", "func": lambda kw: search_yes24_style("성동구", "http://ebook.sdlib.or.kr:8092", kw, "euc-kr")},
+    {"name": "성동구", "url": "http://ebook.sdlib.or.kr:8092", "func": lambda kw: search_yes24_style("성동구", "http://ebook.sdlib.or.kr:8092", kw, "euc-kr")},
     # 강남구 특수
-    {"name": "강남구", "func": lambda kw: search_gangnam(kw)},
+    {"name": "강남구", "url": "https://ebook.gangnam.go.kr", "func": lambda kw: search_gangnam(kw)},
 ]
 
 
@@ -224,6 +224,7 @@ if search_btn and keyword:
     results_container = st.container()
 
     all_results = {}
+    lib_urls = {lib["name"]: lib["url"] for lib in LIBRARIES}
     errors = {}
 
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -252,7 +253,10 @@ if search_btn and keyword:
             st.success(f"**{len(found)}개** 도서관에서 검색 결과를 찾았습니다.")
 
             for lib_name, books in found.items():
+                lib_url = lib_urls.get(lib_name, "")
                 with st.expander(f"📚 {lib_name} ({len(books)}권)", expanded=True):
+                    if lib_url:
+                        st.markdown(f"🔗 [도서관 바로가기]({lib_url})")
                     for book in books:
                         available = book.get("available", 0)
                         total = book.get("total", 0)
