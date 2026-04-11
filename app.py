@@ -154,7 +154,14 @@ def search_sen_library(keyword):
         timeout=10
     )
     resp.raise_for_status()
-    root = ET.fromstring(resp.content)
+    # 빈 응답이거나 XML이 아닌 경우 빈 결과 반환
+    content = resp.content.strip()
+    if not content:
+        return []
+    try:
+        root = ET.fromstring(content)
+    except ET.ParseError:
+        return []
 
     results = []
     # searchTY01: 소장형 전자책 (TY03은 오디오북이라 제외)
