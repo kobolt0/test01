@@ -146,34 +146,38 @@ def search_yes24_style(name, base_url, keyword, encoding="utf-8"):
 
 
 def search_sen_library(keyword):
-    """서울시교육청 전자도서관 (e-lib.sen.go.kr) XML API"""
-    resp = requests.get(
-        "https://e-lib.sen.go.kr/api/contents/search",
-        headers=HEADERS,
-        params={"keyword": keyword},
-        timeout=10
+    """서울시교육청 전자도서관 - 검색 결과 페이지 HTML 스크래핑"""
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    session.headers.update({"Referer": "https://e-lib.sen.go.kr/"})
+    # 메인 페이지 방문으로 세션 쿠키 획득
+    session.get("https://e-lib.sen.go.kr/", timeout=10, verify=False)
+    # 검색 결과 페이지 요청
+    resp = session.get(
+        "https://e-lib.sen.go.kr/contents/search",
+        params={"searchKeyword": keyword, "searchOpt": "TITLE"},
+        timeout=10,
+        verify=False
     )
     resp.raise_for_status()
-    # UTF-8 BOM 제거 후 파싱 (BOM이 있으면 ET.fromstring 실패)
-    content = resp.content.lstrip(b'\xef\xbb\xbf').strip()
-    if not content:
-        return []
-    try:
-        root = ET.fromstring(content)
-    except ET.ParseError:
-        return []
+    html = resp.content.decode("utf-8", errors="replace")
 
     results = []
-    # searchTY01: 소장형 전자책 (TY03은 오디오북이라 제외)
-    for item in root.findall(".//searchTY01/ContentDataList"):
-        title = item.findtext("title", "").strip()
-        author = item.findtext("author", "").strip()
-        total = int(item.findtext("copys", "0") or "0")
-        loaned = int(item.findtext("loanCount", "0") or "0")
-        reserve = int(item.findtext("resvCount", "0") or "0")
+    # 책 제목 파싱
+    titles = re.findall(r'class="[^"]*tit[^"]*"[^>]*>\s*<a[^>]*>([^<]+)</a>', html)
+    # 보유/대출/예약 파싱: 보유 N, 대출 N, 예약 N 형태
+    stats = re.findall(
+        r'보유\s*<[^>]*>(\d+)</[^>]*>.*?대출\s*<[^>]*>(\d+)</[^>]*>.*?예약\s*<[^>]*>(\d+)</[^>]*>',
+        html, re.DOTALL
+    )
+    for i, title in enumerate(titles):
+        if i < len(stats):
+            total, loaned, reserve = int(stats[i][0]), int(stats[i][1]), int(stats[i][2])
+        else:
+            total, loaned, reserve = 0, 0, 0
         results.append({
-            "title": title,
-            "author": author,
+            "title": title.strip(),
+            "author": "",
             "available": total - loaned,
             "total": total,
             "reserve": reserve,
