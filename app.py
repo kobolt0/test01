@@ -146,16 +146,13 @@ def search_yes24_style(name, base_url, keyword, encoding="utf-8"):
 
 
 def search_sen_library(keyword):
-    """서울시교육청 전자도서관 - 검색 결과 페이지 HTML 스크래핑"""
-    session = requests.Session()
-    session.headers.update(HEADERS)
-    session.headers.update({"Referer": "https://e-lib.sen.go.kr/"})
-    # 메인 페이지 방문으로 세션 쿠키 획득
-    session.get("https://e-lib.sen.go.kr/", timeout=10, verify=False)
-    # 검색 결과 페이지 요청
-    resp = session.get(
-        "https://e-lib.sen.go.kr/contents/search",
-        params={"searchKeyword": keyword, "searchOpt": "TITLE"},
+    """서울시교육청 전자도서관 - 모바일 사이트 HTML 스크래핑"""
+    # 모바일 사이트는 TLS 인증서 문제로 verify=False 필요
+    headers = {**HEADERS, "Referer": "https://m.e-lib.sen.go.kr/"}
+    resp = requests.get(
+        "https://m.e-lib.sen.go.kr/0_ebook/list.php",
+        headers=headers,
+        params={"search_txt": keyword, "search_type": "title"},
         timeout=10,
         verify=False
     )
@@ -164,10 +161,12 @@ def search_sen_library(keyword):
 
     results = []
     # 책 제목 파싱
-    titles = re.findall(r'class="[^"]*tit[^"]*"[^>]*>\s*<a[^>]*>([^<]+)</a>', html)
-    # 보유/대출/예약 파싱: 보유 N, 대출 N, 예약 N 형태
+    titles = re.findall(r'class="[^"]*tit[^"]*"[^>]*>.*?<a[^>]*>([^<]+)</a>', html, re.DOTALL)
+    if not titles:
+        titles = re.findall(r'<strong[^>]*class="[^"]*book[^"]*"[^>]*>([^<]+)</strong>', html)
+    # 보유/대출/예약 파싱
     stats = re.findall(
-        r'보유\s*<[^>]*>(\d+)</[^>]*>.*?대출\s*<[^>]*>(\d+)</[^>]*>.*?예약\s*<[^>]*>(\d+)</[^>]*>',
+        r'보유\D*(\d+).*?대출\D*(\d+).*?예약\D*(\d+)',
         html, re.DOTALL
     )
     for i, title in enumerate(titles):
