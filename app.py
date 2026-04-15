@@ -230,7 +230,7 @@ LINK_ONLY_LIBRARIES = [
     {"name": "은평구",       "search_url": lambda kw: "https://epbook.eplib.or.kr/ebookPlatform/home/main.do",                    "note": "리브로피아/YES24"},
     {"name": "광진구",       "search_url": lambda kw: "http://gwangjin.dasangng.co.kr/FxLibrary/",                                "note": "북큐브 FxLibrary"},
     {"name": "금천구",       "search_url": lambda kw: "https://elib.geumcheonlib.seoul.kr/FxLibrary/",                            "note": "북큐브 FxLibrary"},
-    {"name": "서울시교육청", "search_url": lambda kw: "https://e-lib.sen.go.kr/", "note": "서울 거주/직장/학교 (메인에서 직접 검색)"},
+    {"name": "서울시교육청", "search_url": lambda kw: f"https://e-lib.sen.go.kr/contents/search?type=&searchOpt=0&searchKeyword={quote(kw)}", "note": "서울 거주/직장/학교"},
     {"name": "국회도서관",   "search_url": lambda kw: "https://ebook.nanet.go.kr/main",                                           "note": "전국민 무료 (최초 1회 방문)"},
 ]
 
