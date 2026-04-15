@@ -154,8 +154,8 @@ def search_sen_library(keyword):
         timeout=10
     )
     resp.raise_for_status()
-    # 빈 응답이거나 XML이 아닌 경우 빈 결과 반환
-    content = resp.content.strip()
+    # UTF-8 BOM 제거 후 파싱 (BOM이 있으면 ET.fromstring 실패)
+    content = resp.content.lstrip(b'\xef\xbb\xbf').strip()
     if not content:
         return []
     try:
